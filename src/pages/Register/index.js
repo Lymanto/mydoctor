@@ -1,21 +1,50 @@
-import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {useState, useEffect} from 'react';
+import {StyleSheet, View, ScrollView} from 'react-native';
 import {Button, Gap, Header, Input} from '../../components';
-import {colors} from '../../utils';
-const Register = () => {
+import {colors, useForm} from '../../utils';
+const Register = ({navigation}) => {
+  const [form, setForm] = useForm({
+    fullName: '',
+    profession: '',
+    email: '',
+    password: '',
+  });
+  const onContinue = () => {
+    console.log(form);
+    // navigation.navigate('UploadPhoto')
+  };
   return (
     <View style={styles.container}>
-      <Header title="Daftar Akun" />
+      <Header title="Daftar Akun" onPress={() => navigation.goBack()} />
       <View style={styles.content}>
-        <Input label="Full Name" />
-        <Gap height={24} />
-        <Input label="Pekerjaan" />
-        <Gap height={24} />
-        <Input label="Email Address" />
-        <Gap height={24} />
-        <Input label="Password" />
-        <Gap height={40} />
-        <Button title="Continue" />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <Input
+            label="Full Name"
+            value={form.fullName}
+            onChangeText={value => setForm('fullName', value)}
+          />
+          <Gap height={24} />
+          <Input
+            label="Pekerjaan"
+            value={form.profession}
+            onChangeText={value => setForm('profession', value)}
+          />
+          <Gap height={24} />
+          <Input
+            label="Email Address"
+            value={form.email}
+            onChangeText={value => setForm('email', value)}
+          />
+          <Gap height={24} />
+          <Input
+            label="Password"
+            value={form.password}
+            onChangeText={value => setForm('password', value)}
+            secureTextEntry
+          />
+          <Gap height={40} />
+          <Button title="Continue" onPress={onContinue} />
+        </ScrollView>
       </View>
     </View>
   );
