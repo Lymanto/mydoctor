@@ -1,13 +1,29 @@
-import React from 'react';
-import Router from './router';
 import {NavigationContainer} from '@react-navigation/native';
-
-const App = () => {
+import React from 'react';
+import FlashMessage from 'react-native-flash-message';
+import {Provider, useSelector} from 'react-redux';
+import {Loading} from './components';
+import store from './redux/store';
+import Router from './router';
+import {YellowBox} from 'react-native';
+const MainApp = () => {
+  const stateGlobal = useSelector(state => state);
+  YellowBox.ignoreWarnings(['Setting a timer', '@firebase/database']);
   return (
-    <NavigationContainer>
-      <Router />
-    </NavigationContainer>
+    <>
+      <NavigationContainer>
+        <Router />
+      </NavigationContainer>
+      <FlashMessage position="top" />
+      {stateGlobal.loading && <Loading />}
+    </>
   );
 };
-
+const App = () => {
+  return (
+    <Provider store={store}>
+      <MainApp />
+    </Provider>
+  );
+};
 export default App;

@@ -10,5 +10,5 @@ firebase.initializeApp({
   appId: '1:724125502006:web:380e741831c0198d066697',
 });
 
-const Firebase = Firebase;
+const Firebase = firebase;
 export default Firebase;

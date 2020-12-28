@@ -1,26 +1,67 @@
-import React from 'react';
-import {StyleSheet, Text, Image, View} from 'react-native';
+import React, {useState} from 'react';
+import {StyleSheet, Text, Image, View, TouchableOpacity} from 'react-native';
 import {Header, Gap, Button, Link} from '../../components';
 import {colors, fonts} from '../../utils';
-import {ILNullPhoto, IconAddPhoto} from '../../assets';
+import {ILNullPhoto, IconAddPhoto, IconRemovePhoto} from '../../assets';
+import ImagePicker from 'react-native-image-picker';
+import {showMessage} from 'react-native-flash-message';
+import {Firebase} from '../../config';
+import {storeData} from '../../utils';
 
-const UploadPhoto = ({navigation}) => {
+const UploadPhoto = ({navigation, route}) => {
+  const [photoForDB, setPhotoForDB] = useState('');
+  const {fullName, profession, uid} = route.params;
+  const [hasPhoto, setHasPhoto] = useState(false);
+  const [photo, setPhoto] = useState(ILNullPhoto);
+  const getImage = () => {
+    ImagePicker.launchImageLibrary(
+      {qulity: 0.5, maxWidth: 200, maxHeight: 200},
+      response => {
+        console.log('response', response);
+        if (response.didCancel) {
+          showMessage({
+            message: 'oops, sepertinya anda tidak memilih foto nya?',
+            type: 'default',
+            backgroundColor: colors.error,
+            color: colors.white,
+          });
+        } else {
+          const source = {uri: response.uri};
+          setPhotoForDB(`data:${response.type};base64, ${response.data}`);
+
+          setPhoto(source);
+          setHasPhoto(true);
+        }
+      },
+    );
+  };
+  const uploadAndContinue = () => {
+    Firebase.database()
+      .ref('users/' + uid + '/')
+      .update({photo: photoForDB});
+    const data = route.params;
+    data.photo = photoForDB;
+    storeData('user', data);
+    navigation.replace('MainApp');
+  };
   return (
     <View style={styles.page}>
       <Header title="Upload Photo" onPress={() => navigation.goBack()} />
       <View style={styles.content}>
         <View style={styles.profile}>
-          <View style={styles.avatarWrapper}>
-            <Image source={ILNullPhoto} style={styles.avatar} />
-            <IconAddPhoto style={styles.avatarIcon} />
-          </View>
-          <Text style={styles.name}>Shayna Melinda</Text>
-          <Text style={styles.profession}>Product Designer</Text>
+          <TouchableOpacity style={styles.avatarWrapper} onPress={getImage}>
+            <Image source={photo} style={styles.avatar} />
+            {hasPhoto && <IconRemovePhoto style={styles.avatarIcon} />}
+            {!hasPhoto && <IconAddPhoto style={styles.avatarIcon} />}
+          </TouchableOpacity>
+          <Text style={styles.name}>{fullName}</Text>
+          <Text style={styles.profession}>{profession}</Text>
         </View>
         <View>
           <Button
             title="Upload and Continue"
-            onPress={() => navigation.replace('MainApp')}
+            onPress={uploadAndContinue}
+            disable={!hasPhoto}
           />
           <Gap height={40} />
           <Link
@@ -65,6 +106,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: 110,
     height: 110,
+    borderRadius: 110 / 2,
   },
   avatarIcon: {
     position: 'absolute',
